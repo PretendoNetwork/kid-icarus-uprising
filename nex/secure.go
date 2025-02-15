@@ -3,32 +3,38 @@ package nex
 import (
 	"fmt"
 	"os"
+	"strconv"
 
-	nex "github.com/PretendoNetwork/nex-go"
+	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/kid-icarus-uprising/globals"
 )
 
 func StartSecureServer() {
-	globals.SecureServer = nex.NewServer()
-	globals.SecureServer.SetPRUDPVersion(0)
-	globals.SecureServer.SetPRUDPProtocolMinorVersion(3)
-	globals.SecureServer.SetDefaultNEXVersion(nex.NewNEXVersion(2,7,2))
-	globals.SecureServer.SetKerberosPassword(globals.KerberosPassword)
-	globals.SecureServer.SetAccessKey("58a7e494")
+	globals.SecureServer = nex.NewPRUDPServer()
 
-	globals.Timeline = make(map[uint32][]uint8)
+	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	globals.SecureEndpoint.IsSecureEndPoint = true
+	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
+	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID
+	globals.SecureEndpoint.AccountDetailsByUsername = globals.AccountDetailsByUsername
+	globals.SecureServer.BindPRUDPEndPoint(globals.SecureEndpoint)
+	globals.SecureServer.ByteStreamSettings.UseStructureHeader = false
 
-	globals.SecureServer.On("Data", func(packet *nex.PacketV0) {
-		request := packet.RMCRequest()
+	globals.SecureServer.LibraryVersions.SetDefault(nex.NewLibraryVersion(2, 6, 0))
+	globals.SecureServer.AccessKey = "58a7e494"
 
-		fmt.Println("==Kid Icarus: Uprising - Secure==")
-		fmt.Printf("Protocol ID: %#v\n", request.ProtocolID())
-		fmt.Printf("Method ID: %#v\n", request.MethodID())
-		fmt.Println("===============")
+	globals.SecureEndpoint.OnData(func(packet nex.PacketInterface) {
+		request := packet.RMCMessage()
+
+		fmt.Println("=== KIU - Secure ===")
+		fmt.Printf("Protocol ID: %d\n", request.ProtocolID)
+		fmt.Printf("Method ID: %d\n", request.MethodID)
+		fmt.Println("====================")
 	})
 
 	registerCommonSecureServerProtocols()
-	registerSecureServerNEXProtocols()
 
-	globals.SecureServer.Listen(fmt.Sprintf(":%s", os.Getenv("PN_KIU_SECURE_SERVER_PORT")))
+	port, _ := strconv.Atoi(os.Getenv("PN_KIU_SECURE_SERVER_PORT"))
+
+	globals.SecureServer.Listen(port)
 }
