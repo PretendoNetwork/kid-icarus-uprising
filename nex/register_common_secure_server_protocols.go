@@ -1,8 +1,10 @@
 package nex
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/PretendoNetwork/kid-icarus-uprising/database"
+	local_globals "github.com/PretendoNetwork/kid-icarus-uprising/globals"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
@@ -17,10 +19,7 @@ import (
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/kid-icarus-uprising/database"
-	local_globals "github.com/PretendoNetwork/kid-icarus-uprising/globals"
-
-	)
+)
 
 func registerCommonSecureServerProtocols() {
 	secureProtocol := secure.NewProtocol()
@@ -52,12 +51,18 @@ func registerCommonSecureServerProtocols() {
 	commonMatchmakeExtensionProtocol.SetManager(matchmakingManager)
 
 	commonMatchmakeExtensionProtocol.CleanupSearchMatchmakeSession = func(matchmakeSession *mm_types.MatchmakeSession) {
-		//stubbed
+		matchmakeSession.Attributes[0] = types.NewUInt32(0)
+		matchmakeSession.Attributes[1] = types.NewUInt32(0)
+		matchmakeSession.Attributes[5] = types.NewUInt32(0)
+		matchmakeSession.Attributes[2] = types.NewUInt32(0)
 	}
 	commonMatchmakeExtensionProtocol.OnAfterAutoMatchmakeWithSearchCriteriaPostpone = func(packet nex.PacketInterface, lstSearchCriteria types.List[mm_types.MatchmakeSessionSearchCriteria], anyGathering types.AnyObjectHolder[mm_types.GatheringInterface], strMessage types.String) {
-		fmt.Println(anyGathering)
+		matchmakingManager.Database.ExecContext(context.Background(), "UPDATE matchmaking.matchmake_sessions SET open_participation=true WHERE game_mode=12")
+	
 	}
 	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = func(searchCriterias types.List[mm_types.MatchmakeSessionSearchCriteria]) {
-		// Stubbed
+		for i := 0; i < len(searchCriterias); i++ {
+			searchCriterias[i].Attribs[4] = types.NewString("")
+		}
 	}
 }
