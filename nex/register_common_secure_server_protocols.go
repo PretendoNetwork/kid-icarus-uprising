@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/PretendoNetwork/kid-icarus-uprising/database"
+	"github.com/PretendoNetwork/kid-icarus-uprising/globals"
 	local_globals "github.com/PretendoNetwork/kid-icarus-uprising/globals"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -31,6 +32,7 @@ func registerCommonSecureServerProtocols() {
 
 	matchmakingManager := common_globals.NewMatchmakingManager(local_globals.SecureEndpoint, database.Postgres)
 
+	matchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 	natTraversalProtocol := nat_traversal.NewProtocol()
 	local_globals.SecureEndpoint.RegisterServiceProtocol(natTraversalProtocol)
 	common_nat_traversal.NewCommonProtocol(natTraversalProtocol)
@@ -57,8 +59,8 @@ func registerCommonSecureServerProtocols() {
 		matchmakeSession.Attributes[2] = types.NewUInt32(0)
 	}
 	commonMatchmakeExtensionProtocol.OnAfterAutoMatchmakeWithSearchCriteriaPostpone = func(packet nex.PacketInterface, lstSearchCriteria types.List[mm_types.MatchmakeSessionSearchCriteria], anyGathering types.AnyObjectHolder[mm_types.GatheringInterface], strMessage types.String) {
-		matchmakingManager.Database.ExecContext(context.Background(), "UPDATE matchmaking.matchmake_sessions SET open_participation=true WHERE game_mode=12")
-	
+		matchmakingManager.Database.ExecContext(context.Background(), "UPDATE matchmaking.matchmake_sessions SET open_participation=true")
+
 	}
 	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = func(searchCriterias types.List[mm_types.MatchmakeSessionSearchCriteria]) {
 		for i := 0; i < len(searchCriterias); i++ {
