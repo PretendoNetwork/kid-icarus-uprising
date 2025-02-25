@@ -67,5 +67,4 @@ func registerCommonSecureServerProtocols() {
 			searchCriterias[i].Attribs[4] = types.NewString("")
 		}
 	}
-	commonMatchmakeExtensionProtocol.OnAfterUpdateNotificationData = func(packet nex.PacketInterface, uiType, uiParam1, uiParam2 types.UInt32, strParam types.String) {}
 }
