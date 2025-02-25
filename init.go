@@ -129,10 +129,10 @@ func init() {
 	}
 
 	if port, err := strconv.Atoi(friendsGRPCPort); err != nil {
-		globals.Logger.Errorf("PN_KIU_FRIENDS_GRPC_PORT is not a valid port. Expected 0-65535, got %s", accountGRPCPort)
+		globals.Logger.Errorf("PN_KIU_FRIENDS_GRPC_PORT is not a valid port. Expected 0-65535, got %s", friendsGRPCPort)
 		os.Exit(0)
 	} else if port < 0 || port > 65535 {
-		globals.Logger.Errorf("PN_KIU_FRIENDS_GRPC_PORT is not a valid port. Expected 0-65535, got %s", accountGRPCPort)
+		globals.Logger.Errorf("PN_KIU_FRIENDS_GRPC_PORT is not a valid port. Expected 0-65535, got %s", friendsGRPCPort)
 		os.Exit(0)
 	}
 
